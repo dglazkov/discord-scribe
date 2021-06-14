@@ -1,10 +1,10 @@
-# flux-scribe-bot
+# discord-scribe
 
 To run, set the `GOOGLE_APPLICATION_CREDENTIALS` env variable that points to the key file:
 
 ```sh
 
-GOOGLE_APPLICATION_CREDENTIALS="path/to/file.json" ./flux-scribe-bot
+GOOGLE_APPLICATION_CREDENTIALS="path/to/file.json" ./discord-scribe
 
 ```
 

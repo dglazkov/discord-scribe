@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-flux-scribe-bot
+discord-scribe
 
 # Test binary, built with `go test -c`
 *.test

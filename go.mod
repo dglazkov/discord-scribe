@@ -1,4 +1,4 @@
-module github.com/dglazkov/flux-scribe-bot
+module github.com/dglazkov/discord-scribe
 
 go 1.16
 
