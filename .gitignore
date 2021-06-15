@@ -5,6 +5,7 @@
 *.so
 *.dylib
 discord-scribe
+run.sh
 
 # Test binary, built with `go test -c`
 *.test
