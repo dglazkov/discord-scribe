@@ -29,19 +29,8 @@ func main() {
 		return
 	}
 
-	// Register ready as a callback for the ready events.
-	newBot(dg, &DiscordController{dg})
-
-	// Open the websocket and begin listening.
-	err = dg.Open()
-	if err != nil {
-		fmt.Println("Error opening Discord session: ", err)
-		return
-	}
-	defer dg.Close()
-
 	cfg := mysql.Cfg("flux-scribe-bot:us-west1:flux-scribe-database", "user", "")
-	// cfg.DBName = "flux-scribe-database"
+	cfg.DBName = "flux"
 	cfg.ParseTime = true
 
 	const timeout = 10 * time.Second
@@ -53,13 +42,18 @@ func main() {
 	if err != nil {
 		panic("couldn't dial: " + err.Error())
 	}
-	// Close db after this method exits since we don't need it for the
-	// connection pooling.
 	defer db.Close()
 
-	var now time.Time
-	fmt.Println(db.QueryRow("SELECT NOW()").Scan(&now))
-	fmt.Println(now)
+	// Register ready as a callback for the ready events.
+	newBot(dg, db)
+
+	// Open the websocket and begin listening.
+	err = dg.Open()
+	if err != nil {
+		fmt.Println("Error opening Discord session: ", err)
+		return
+	}
+	defer dg.Close()
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println(APP_NAME + " is now running.  Press CTRL-C to exit.")
