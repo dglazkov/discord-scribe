@@ -9,6 +9,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/mysql"
 	"github.com/bwmarrin/discordgo"
+	"github.com/dglazkov/discord-scribe/scribe"
 )
 
 const TOKEN_ENV_NAME = "BOT_TOKEN"
@@ -45,7 +46,8 @@ func main() {
 	defer db.Close()
 
 	// Register ready as a callback for the ready events.
-	newBot(dg, db)
+	scribe := scribe.NewScribe(db)
+	newBot(dg, scribe)
 
 	// Open the websocket and begin listening.
 	err = dg.Open()
