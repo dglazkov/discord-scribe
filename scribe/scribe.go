@@ -3,7 +3,6 @@ package scribe
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -36,10 +35,10 @@ func (s *Scribe) GetMessages(channelID string, guildID string) {
 		log.Fatal(err)
 	}
 
-	tx.Exec("SET NAMES utf8mb4;")
+	tx.Exec("SET NAMES utf8mb4;") // make emoji be storable.
+
 	for _, message := range messages {
 		authorID := message.Author.ID
-		fmt.Println("Reading message", message.ID, message.ChannelID, message.GuildID, authorID, message.Content, message.Timestamp)
 		_, exec_err := tx.Exec(`INSERT INTO
 		messages (id, channel_id, guild_id, author_id, content, timestamp)
 		values (?, ?, ?, ?, ?, ?)`,
