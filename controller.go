@@ -2,14 +2,6 @@ package main
 
 import "github.com/bwmarrin/discordgo"
 
-type Controller interface {
-	ChannelMessage(channelID, messageID string) (st *discordgo.Message, err error)
-	ChannelMessages(channelID string, limit int, beforeID, afterID, aroundID string) (st []*discordgo.Message, err error)
-	GuildChannelCreateComplex(guildID string, data discordgo.GuildChannelCreateData) (st *discordgo.Channel, err error)
-	ChannelEditComplex(channelID string, data *discordgo.ChannelEdit) (st *discordgo.Channel, err error)
-	GuildChannelsReorder(guildID string, channels []*discordgo.Channel) error
-}
-
 type DiscordController struct {
 	session *discordgo.Session
 }

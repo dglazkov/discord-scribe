@@ -47,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Register ready as a callback for the ready events.
-	scribe := scribe.NewScribe(db, context.Background())
+	scribe := scribe.NewScribe(db, context.Background(), dg)
 	newBot(dg, scribe)
 
 	// Open the websocket and begin listening.
