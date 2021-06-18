@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -46,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Register ready as a callback for the ready events.
-	scribe := scribe.NewScribe(db)
+	scribe := scribe.NewScribe(db, context.Background())
 	newBot(dg, scribe)
 
 	// Open the websocket and begin listening.

@@ -1,6 +1,7 @@
 package scribe
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -10,11 +11,12 @@ import (
 )
 
 type Scribe struct {
-	db *sql.DB
+	db  *sql.DB
+	ctx context.Context
 }
 
-func NewScribe(db *sql.DB) *Scribe {
-	return &Scribe{db}
+func NewScribe(db *sql.DB, ctx context.Context) *Scribe {
+	return &Scribe{db, ctx}
 }
 
 func asTime(s discordgo.Timestamp) time.Time {
@@ -24,7 +26,12 @@ func asTime(s discordgo.Timestamp) time.Time {
 
 func (s *Scribe) AddMessage(message *discordgo.Message) {
 	author_id := message.Author.ID
-	_, err := s.db.Exec(`INSERT INTO
+	tx, err := s.db.BeginTx(s.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, exec_err := tx.Exec(`INSERT INTO
 		messages (id, channel_id, guild_id, author_id, content, timestamp)
 		values (?, ?, ?, ?, ?, ?)`,
 		message.ID,
@@ -34,9 +41,13 @@ func (s *Scribe) AddMessage(message *discordgo.Message) {
 		message.Content,
 		asTime(message.Timestamp))
 
-	if err != nil {
+	if exec_err != nil {
 		log.Fatalf("Error: %v", err)
 	}
 
-	fmt.Println("Message created")
+	if err := tx.Commit(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Message added")
 }
