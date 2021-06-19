@@ -2,8 +2,7 @@ DROP TABLE IF EXISTS `channels`;
 
 CREATE TABLE `channels` (
   `id` bigint(8) NOT NULL,
-  `is_fully_read` boolean,
-  `earliest_read_message` bigint(8) DEFAULT NULL,
+  `has_beginning` boolean DEFAULT 0, -- contains messages from the very beginning
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
