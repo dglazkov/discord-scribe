@@ -37,11 +37,17 @@ func (s *Scribe) GetMessages(channelID string, guildID string) {
 
 	tx.Exec("SET NAMES utf8mb4;") // make emoji be storable.
 
+	stmt, err := tx.Prepare(`INSERT INTO
+	messages (id, channel_id, guild_id, author_id, content, timestamp)
+	values (?, ?, ?, ?, ?, ?)`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, message := range messages {
 		authorID := message.Author.ID
-		_, exec_err := tx.Exec(`INSERT INTO
-		messages (id, channel_id, guild_id, author_id, content, timestamp)
-		values (?, ?, ?, ?, ?, ?)`,
+		_, exec_err := stmt.Exec(
 			message.ID,
 			message.ChannelID,
 			guildID,
