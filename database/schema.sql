@@ -14,7 +14,8 @@ CREATE TABLE `messages` (
   `guild_id` bigint(8) DEFAULT NULL,
   `author_id` bigint(8) DEFAULT NULL,
   `content` text NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `timestamp` timestamp NOT NULL,
   -- TODO: consider making channel_id a foreign key
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX (`timestamp`, `channel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
