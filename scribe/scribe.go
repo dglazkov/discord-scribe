@@ -36,6 +36,10 @@ type SlurpMessagesResult struct {
 // in how it reads these messages. The general approach is to first read earliest
 // messages until the very beginning is reached. Then, read the more recent
 // messages until there's no more to read.
+// Params:
+// 		channelID 	the Discord channel ID to read messages from
+//		guildID 		the Discord guild ID for the channel. Sadly, this is necessary because ChannelMessages
+//								returns discordgo.Message instances that don't have their GuildID populated.
 func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessagesResult, error) {
 	result := &SlurpMessagesResult{false, 0, false, false}
 	// Wrap all this work in one transaction.
