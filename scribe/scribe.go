@@ -4,7 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/bwmarrin/discordgo"
 )
+
+// Intentionally shaped to fit discordgo.Session, but left flexible in case
+// someone wants to fake/stub it.
+type MessageReader interface {
+	ChannelMessages(channelID string, limit int, beforeID, afterID, aroundID string) (st []*discordgo.Message, err error)
+}
 
 type Scribe struct {
 	db     *sql.DB
@@ -17,10 +25,10 @@ func NewScribe(db *sql.DB, ctx context.Context, reader MessageReader) *Scribe {
 }
 
 type SlurpMessagesResult struct {
-	complete         bool // true if all messages are in the database
-	messagesRead     int  // number of messages read from Discord
-	beginningReached bool // true if the beginning of the channel has been reached during this read
-	readingEarlier   bool // true if was reading earlier messages
+	Complete         bool // true if all messages are in the database
+	MessagesRead     int  // number of messages read from Discord
+	BeginningReached bool // true if the beginning of the channel has been reached during this read
+	ReadingEarlier   bool // true if was reading earlier messages
 }
 
 // Calling function will read at most 100 messages from Discord and put them
@@ -61,7 +69,7 @@ func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessages
 	// 	latest known message).
 	if !hasBeginning {
 		beforeID = r.earliestID
-		result.readingEarlier = true
+		result.ReadingEarlier = true
 	} else {
 		afterID = r.latestID
 	}
@@ -71,16 +79,20 @@ func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessages
 		return result, fmt.Errorf("failed to read messages from Discord for channel '%v': %v", channelID, err)
 	}
 
-	result.messagesRead = len(messages)
+	result.MessagesRead = len(messages)
 
 	q.storeMessages(channelID, guildID, messages)
 
 	// If the result contains fewer than 100 earler messages,
 	// presume that the beginning has been reached.
-	if !hasBeginning && len(messages) < 100 {
-		result.beginningReached = true
-		if err := q.setChannelHasBeginning(channelID); err != nil {
-			return result, fmt.Errorf("failed to update has_beginning for channel '%v': %v", channelID, err)
+	if len(messages) < 100 {
+		if !hasBeginning {
+			result.BeginningReached = true
+			if err := q.setChannelHasBeginning(channelID); err != nil {
+				return result, fmt.Errorf("failed to update has_beginning for channel '%v': %v", channelID, err)
+			}
+		} else {
+			result.Complete = true
 		}
 	}
 

@@ -42,5 +42,13 @@ func duration(msg string, start time.Time) {
 func (b *bot) messageCreate(s *discordgo.Session, event *discordgo.MessageCreate) {
 	defer duration(track("Add Message"))
 	message := event.Message
-	b.scribe.SlurpMessages(message.ChannelID, message.GuildID)
+	r, err := b.scribe.SlurpMessages(message.ChannelID, message.GuildID)
+	if err != nil {
+		log.Fatalf("failed to slurp messages: %v", err)
+	}
+	log.Println("Succesfully slurped messages:")
+	log.Printf("\tcomplete: %v\n", r.Complete)
+	log.Printf("\ttmessages read: %v\n", r.MessagesRead)
+	log.Printf("\tbeginning reached: %v\n", r.BeginningReached)
+	log.Printf("\tReading earlier messages: %v\n", r.ReadingEarlier)
 }
