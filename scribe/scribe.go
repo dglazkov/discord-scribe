@@ -83,8 +83,9 @@ func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessages
 
 	q.storeMessages(channelID, guildID, messages)
 
-	// If the result contains fewer than 100 earler messages,
-	// presume that the beginning has been reached.
+	// If the result contains fewer than 100 messages,
+	// presume that the beginning has been reached if reading earlier messages,
+	// or that the end (yay, we're up to date) has been reached if reading later messages.
 	if len(messages) < 100 {
 		if !hasBeginning {
 			result.BeginningReached = true
