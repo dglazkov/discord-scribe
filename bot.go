@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dglazkov/discord-scribe/scribe"
@@ -28,7 +30,17 @@ func (b *bot) ready(s *discordgo.Session, event *discordgo.Ready) {
 	fmt.Println("Ready and waiting!")
 }
 
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
+
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %v\n", msg, time.Since(start))
+}
+
 // discordgo callback: called after the when new message is posted.
 func (b *bot) messageCreate(s *discordgo.Session, event *discordgo.MessageCreate) {
-	b.scribe.AddMessage(event.Message)
+	defer duration(track("Add Message"))
+	message := event.Message
+	b.scribe.SlurpMessages(message.ChannelID, message.GuildID)
 }
