@@ -58,7 +58,7 @@ func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessages
 
 	hasBeginning, err := q.getChannelHasBeginning(channelID)
 	if err != nil {
-		return result, fmt.Errorf("faild to get has_beginning for channel '%v': %v", channelID, err)
+		return result, fmt.Errorf("failed to get has_beginning for channel '%v': %v", channelID, err)
 	}
 
 	var (
