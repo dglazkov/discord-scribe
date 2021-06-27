@@ -4,7 +4,7 @@ CREATE TABLE `channels` (
   `id` bigint(8) NOT NULL,
   `has_beginning` boolean DEFAULT 0, -- contains messages from the very beginning
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB;
 
 DROP TABLE IF EXISTS `messages`;
 
@@ -20,4 +20,15 @@ CREATE TABLE `messages` (
   -- TODO: consider making channel_id a foreign key
   PRIMARY KEY (`id`),
   INDEX (`timestamp`, `channel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS `message_reactions`;
+
+CREATE TABLE `message_reactions` (
+  `id` int AUTO_INCREMENT,
+  `message_id` bigint(8) NOT NULL,
+  `reaction` varchar(10) NOT NULL,
+  `count` int DEFAULT 0,
+  PRIMARY KEY (`id`),
+  INDEX (`reaction`, `message_id`) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

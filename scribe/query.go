@@ -92,14 +92,33 @@ type reactionStats struct {
 	types int
 }
 
-func computeReactionStats(reactions []*discordgo.MessageReactions) reactionStats {
+func (q *query) storeReactions(messageID string, reactions []*discordgo.MessageReactions) (*reactionStats, error) {
 	var result reactionStats
 	result.types = len(reactions)
 	result.count = 0
+
+	stmt, err := q.tx.Prepare(`
+	INSERT INTO message_reactions (
+		message_id, 
+		reaction, 
+		count)
+	VALUES (?, ?, ?)`)
+
+	if err != nil {
+		return nil, err
+	}
+
 	for _, reaction := range reactions {
 		result.count += reaction.Count
+		if _, err := stmt.Exec(
+			messageID,
+			reaction.Emoji.Name,
+			reaction.Count); err != nil {
+			return nil, err
+		}
 	}
-	return result
+
+	return &result, nil
 }
 
 func (q *query) storeMessages(channelID string, messages []*discordgo.Message) error {
@@ -123,7 +142,10 @@ func (q *query) storeMessages(channelID string, messages []*discordgo.Message) e
 
 	for _, message := range messages {
 		authorID := message.Author.ID
-		stats := computeReactionStats(message.Reactions)
+		stats, err := q.storeReactions(message.ID, message.Reactions)
+		if err != nil {
+			return err
+		}
 		if _, err := stmt.Exec(
 			message.ID,
 			message.ChannelID,
