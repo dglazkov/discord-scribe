@@ -87,12 +87,36 @@ func asTime(s discordgo.Timestamp) time.Time {
 	return t
 }
 
+type reactionStats struct {
+	count int
+	types int
+}
+
+func computeReactionStats(reactions []*discordgo.MessageReactions) reactionStats {
+	var result reactionStats
+	result.types = len(reactions)
+	result.count = 0
+	for _, reaction := range reactions {
+		result.count += reaction.Count
+	}
+	return result
+}
+
 func (q *query) storeMessages(channelID string, guildID string, messages []*discordgo.Message) error {
 	q.tx.Exec("SET NAMES utf8mb4;") // Make emoji be storable.
 
 	stmt, err := q.tx.Prepare(`
-	INSERT INTO messages (id, channel_id, guild_id, author_id, content, timestamp)
-	VALUES (?, ?, ?, ?, ?, ?)`)
+	INSERT INTO messages (
+		id, 
+		channel_id, 
+		guild_id, 
+		author_id, 
+		content, 
+		timestamp, 
+		reaction_count,
+		reaction_types,
+		type)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return err
@@ -100,13 +124,17 @@ func (q *query) storeMessages(channelID string, guildID string, messages []*disc
 
 	for _, message := range messages {
 		authorID := message.Author.ID
+		stats := computeReactionStats(message.Reactions)
 		if _, err := stmt.Exec(
 			message.ID,
 			message.ChannelID,
 			guildID,
 			authorID,
 			message.Content,
-			asTime(message.Timestamp)); err != nil {
+			asTime(message.Timestamp),
+			stats.count,
+			stats.types,
+			message.Type); err != nil {
 			return err
 		}
 	}

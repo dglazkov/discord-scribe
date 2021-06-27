@@ -15,6 +15,9 @@ CREATE TABLE `messages` (
   `author_id` bigint(8) DEFAULT NULL,
   `content` text NOT NULL,
   `timestamp` timestamp NOT NULL,
+  `reaction_count` int DEFAULT 0,
+  `reaction_types` int DEFAULT 0,
+  `type` int DEFAULT 0,
   -- TODO: consider making channel_id a foreign key
   PRIMARY KEY (`id`),
   INDEX (`timestamp`, `channel_id`)
