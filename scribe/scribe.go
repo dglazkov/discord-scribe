@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -24,6 +25,18 @@ func NewScribe(db *sql.DB, ctx context.Context, reader MessageReader) *Scribe {
 	return &Scribe{db, ctx, reader}
 }
 
+func (s *Scribe) OnNewMessage(channelID string) {
+	r, err := s.slurpMessages(channelID)
+	if err != nil {
+		log.Fatalf("failed to slurp messages: %v", err)
+	}
+	log.Println("Succesfully slurped messages:")
+	log.Printf("\tcomplete: %v\n", r.Complete)
+	log.Printf("\ttmessages read: %v\n", r.MessagesRead)
+	log.Printf("\tbeginning reached: %v\n", r.BeginningReached)
+	log.Printf("\tReading earlier messages: %v\n", r.ReadingEarlier)
+}
+
 type SlurpMessagesResult struct {
 	Complete         bool // true if all messages are in the database
 	MessagesRead     int  // number of messages read from Discord
@@ -38,7 +51,7 @@ type SlurpMessagesResult struct {
 // messages until there's no more to read.
 // Params:
 // 		channelID 	the Discord channel ID to read messages from
-func (s *Scribe) SlurpMessages(channelID string) (*SlurpMessagesResult, error) {
+func (s *Scribe) slurpMessages(channelID string) (*SlurpMessagesResult, error) {
 	result := &SlurpMessagesResult{false, 0, false, false}
 	// Wrap all this work in one transaction.
 	tx, err := s.db.BeginTx(s.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})

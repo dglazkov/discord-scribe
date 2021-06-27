@@ -40,14 +40,5 @@ func duration(msg string, start time.Time) {
 // discordgo callback: called after the when new message is posted.
 func (b *bot) messageCreate(s *discordgo.Session, event *discordgo.MessageCreate) {
 	defer duration(track("Add Message"))
-	message := event.Message
-	r, err := b.scribe.SlurpMessages(message.ChannelID)
-	if err != nil {
-		log.Fatalf("failed to slurp messages: %v", err)
-	}
-	log.Println("Succesfully slurped messages:")
-	log.Printf("\tcomplete: %v\n", r.Complete)
-	log.Printf("\ttmessages read: %v\n", r.MessagesRead)
-	log.Printf("\tbeginning reached: %v\n", r.BeginningReached)
-	log.Printf("\tReading earlier messages: %v\n", r.ReadingEarlier)
+	b.scribe.OnNewMessage(event.Message.ChannelID)
 }
