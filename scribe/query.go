@@ -102,21 +102,20 @@ func computeReactionStats(reactions []*discordgo.MessageReactions) reactionStats
 	return result
 }
 
-func (q *query) storeMessages(channelID string, guildID string, messages []*discordgo.Message) error {
+func (q *query) storeMessages(channelID string, messages []*discordgo.Message) error {
 	q.tx.Exec("SET NAMES utf8mb4;") // Make emoji be storable.
 
 	stmt, err := q.tx.Prepare(`
 	INSERT INTO messages (
 		id, 
 		channel_id, 
-		guild_id, 
 		author_id, 
 		content, 
 		timestamp, 
 		reaction_count,
 		reaction_types,
 		type)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return err
@@ -128,7 +127,6 @@ func (q *query) storeMessages(channelID string, guildID string, messages []*disc
 		if _, err := stmt.Exec(
 			message.ID,
 			message.ChannelID,
-			guildID,
 			authorID,
 			message.Content,
 			asTime(message.Timestamp),

@@ -38,9 +38,7 @@ type SlurpMessagesResult struct {
 // messages until there's no more to read.
 // Params:
 // 		channelID 	the Discord channel ID to read messages from
-//		guildID 		the Discord guild ID for the channel. Sadly, this is necessary because ChannelMessages
-//								returns discordgo.Message instances that don't have their GuildID populated.
-func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessagesResult, error) {
+func (s *Scribe) SlurpMessages(channelID string) (*SlurpMessagesResult, error) {
 	result := &SlurpMessagesResult{false, 0, false, false}
 	// Wrap all this work in one transaction.
 	tx, err := s.db.BeginTx(s.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
@@ -85,7 +83,9 @@ func (s *Scribe) SlurpMessages(channelID string, guildID string) (*SlurpMessages
 
 	result.MessagesRead = len(messages)
 
-	q.storeMessages(channelID, guildID, messages)
+	if err := q.storeMessages(channelID, messages); err != nil {
+		return nil, fmt.Errorf("failed to store messages: %v", err)
+	}
 
 	// If the result contains fewer than 100 messages,
 	// presume that the beginning has been reached if reading earlier messages,
